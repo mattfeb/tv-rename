@@ -113,7 +113,10 @@ def moveFiles(downPath, storagePath):
     progress.progress(totalCount)
 
 #################################################
+# Location/Name of the text file that stores the list of watched shows
 titleList = "C:/tv-rename/names.txt"
+
+#location to save output file
 outputFileLocation = "C:/tv-rename/output.txt"
 
 downPath = sys.argv[1]
