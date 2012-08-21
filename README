@@ -1,8 +1,8 @@
-This program will fix a tv file name like "MyShow S02E06 720p HDTV x264.mkv" to "MyShow S02 E06" and 
-move the corrected file to your specified directory. The folder naming is ShowTitle -> Season xx -> file.mkv
+This program will fix a tv file name based on a given regular expression and 
+move the corrected file to a specified directory.
 
 Run:
-python rename.py C:/filesToBeFixed C:/SavedFiles
+python rename.py filesToBeFixed WhereToSaveFiles
 
 Requires a text file listing shows, specify the file 
 in titleList within rename.py
@@ -10,4 +10,3 @@ in titleList within rename.py
 An output file is also created, specify the file
 in outputFileLocation within rename.py
 
-Tested on windows 7 x64, using python 3.2
