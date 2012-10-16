@@ -1,0 +1,14 @@
+[paths]
+titleListPath = C:/tv-rename/names.txt
+logFilePath = C:/tv-rename/output.txt
+downPath = C:/tv-rename/down/
+storagePath = C:/tv-rename/store/
+
+
+[regex]
+title = None
+matchCorrect = [\w]*S\d\d E\d\d.[\w]*
+matchCorrectTitle = ([\w \d\.-]+)S(\d\d) E(\d\d)
+re1 = [\w\d\. '-]*(%(title)s)[\w\d\. '-\[\]\{\}]*S(\d\d)[\w\. ]*E(\d\d)[\w\d\. '-\[\]\{\}]*
+re2 = [\w\d\. '-]*(%(title)s)[\w\d\. '-\[\]\{\}]*(\d\d)[\.x]*(\d\d)[\w\d\. '-\[\]\{\}]*
+re3 = [\w\d\. '-]*(%(title)s)[\w\d\. '-\[\]\{\}]*(\d)[\w\. ]*(\d\d)[\w\d\. '-\[\]\{\}]*

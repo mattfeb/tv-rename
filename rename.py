@@ -1,8 +1,12 @@
-import sys, os, shutil, glob, re, PBar
+import sys
+import os
+import shutil
+import re
+import configparser
+import PBar
 from PBar import *
 from time import strftime
 
-#################################################
 
 def fixName(fileName, titleList):
     Season = ""
@@ -10,38 +14,41 @@ def fixName(fileName, titleList):
     fileType = ""
 
     # Check if the file is already fixed
-    fixedRegex = re.compile("[\w ]*S\d\d E\d\d\.[\w]*")
-    if fixedRegex.search(fileName): return None
+    fixedRegex = re.compile(parser.get('regex', 'matchCorrect'))
+    if fixedRegex.search(fileName): 
+        return None
 
     for i in range(0, len(titleList)):
         title = titleList[i].replace(" ", "[\. _-]*")
-        regex1 = re.compile("[\w\d\. '-]*(" + title + ")[\w\d\. '-\[\]\{\}]*S(\d\d)[\w\. ]*E(\d\d)[\w\d\. '-\[\]\{\}]*", re.IGNORECASE)
-        regex2 = re.compile("[\w\d\. '-]*(" + title + ")[\w\d\. '-\[\]\{\}]*(\d\d)[\.x]*(\d\d)[\w\d\. '-\[\]\{\}]*", re.IGNORECASE)
-        regex3 = re.compile("[\w\d\. '-]*(" + title + ")[\w\d\. '-\[\]\{\}]*(\d)[\w\. ]*(\d\d)[\w\d\. '-\[\]\{\}]*", re.IGNORECASE)
+        parser.set('regex', 'title', title)
+
+        # Regular expression gets more generic 
+        regex1 = re.compile(parser.get('regex', 're1'), re.IGNORECASE)
+        regex2 = re.compile(parser.get('regex', 're2'), re.IGNORECASE)
+        regex3 = re.compile(parser.get('regex', 're3'), re.IGNORECASE)
 
         if regex1.search(fileName):
             return getCorrectTitle(regex1, titleList[i], fileName)
-
         elif regex2.search(fileName):
             return getCorrectTitle(regex2, titleList[i], fileName)
-
         elif regex3.search(fileName):
             return getCorrectedTitle(regex3, titleList[i], fileName)
 
     return None
 
 def getCorrectTitle(regex, title, fileName):
-    season   = " S" + getNum(regex.search(fileName).group(2))
-    episode  = " E" + getNum(regex.search(fileName).group(3))
+    season = " S" + getNum(regex.search(fileName).group(2))
+    episode = " E" + getNum(regex.search(fileName).group(3))
     fileType = fileName[fileName.rfind("."):len(fileName)]
 
     return title + season + episode + fileType
 
 def rename(downPath, titleListPath):
-    output = open(outputFileLocation, 'a')
+    output = open(parser.get('paths', 'logFilePath'), 'a')
     output.write(strftime("%d %b %Y %I:%M:%S") + "\n")
 
     titleList = list(line.strip() for line in open(titleListPath))
+
     downList = os.listdir(downPath)
     os.chdir(downPath)
 
@@ -59,7 +66,7 @@ def rename(downPath, titleListPath):
             try:
                 os.rename(downList[i], fixed)
             except:
-                print("Yeah...Something happened, I'm going to need you to come in on sunday.")
+                print("Failure trying to rename: " + downList[i])
 
     output.close()
 
@@ -70,17 +77,17 @@ def getNum(n):
     else:
         return n
 
-
 def moveFiles(downPath, storagePath):
     totalCount = 0
     count = 0
-    regexPattern = re.compile("([\w \d\.-]+)S(\d\d) E(\d\d)")
+    regexPattern = re.compile(parser.get('regex', 'matchCorrectTitle'))
     downList = os.listdir(downPath)
 
     for j in range(0, len(downList)):
         if regexPattern.search(downList[j]):
             totalCount += 1
 
+    # Creates a simple progress bar 
     progress = PBar(totalCount)
 
     for i in range(0, len(downList)):
@@ -98,7 +105,7 @@ def moveFiles(downPath, storagePath):
                 except(shutil.Error):
                     print("Unable to move: " + downList[i])
                 except:
-                    print("Something broke while moving a file, sorry and please come again")
+                    print("Failure while moving a file")
                     raise
             else:
                 try:
@@ -108,19 +115,18 @@ def moveFiles(downPath, storagePath):
                     print("Unable to move: " + downList[i])
                     print(type(inst))
                 except:
-                    print("Something broke while moving a file, sorry and please come again")
+                    print("Failure while moving a file")
                     raise
     progress.progress(totalCount)
 
-#################################################
-# Location/Name of the text file that stores the list of watched shows
-titleList = "C:/tv-rename/names.txt"
 
-#location to save output file
-outputFileLocation = "C:/tv-rename/output.txt"
+# Creates a configparser for paths/regular expressions
+parser = configparser.ConfigParser()
+parser.read(os.getcwd() + '/config.txt')
 
-downPath = sys.argv[1]
-storagePath = sys.argv[2]
+downPath = parser.get('paths', 'downPath')
+titleListPath = parser.get('paths', 'titleListPath')
+storagePath = parser.get('paths', 'storagePath')
 
-rename(downPath, titleList)
+rename(downPath, titleListPath)
 moveFiles(downPath, storagePath)
